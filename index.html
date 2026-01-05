@@ -1,23 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test AR #3</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Carte AR - Théo Metayer</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/2.1.7/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js"></script>
+    
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #startBtn {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        #startBtn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+        .hidden { display: none !important; }
+    </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-        <!-- Assets: précharge l'image -->
-        <a-assets>
-            <img id="cardImg" src="capture.jpg" crossorigin="anonymous">
+<body>
+    <!-- Bouton de démarrage pour iOS -->
+    <button id="startBtn">📱 Démarrer la Caméra</button>
+
+    <a-scene 
+        id="arScene"
+        class="hidden"
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
+        vr-mode-ui="enabled: false"
+        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true; alpha: true;">
+        
+        <!-- Assets -->
+        <a-assets timeout="10000">
+            <img id="card" src="capture.jpg" crossorigin="anonymous">
         </a-assets>
         
-        <!-- Marker for tracking -->
-        <a-marker type="pattern" url="pattern-hiro.patt" emitevents="true" id="marker">
-            <!-- Plane to display the image -->
+        <!-- Marqueur Hiro -->
+        <a-marker preset="hiro" id="marker" emitevents="true" smooth="true" smoothCount="10">
+            <!-- Image carte de visite -->
             <a-plane 
-                id="imagePlane" 
-                src="#cardImg"
+                id="cardPlane"
+                src="#card" 
                 position="0 0 0" 
                 rotation="-90 0 0" 
                 width="2" 
@@ -26,28 +64,60 @@
             </a-plane>
         </a-marker>
         
-        <!-- Camera to view the scene -->
-        <a-entity camera></a-entity>
+        <!-- Caméra -->
+        <a-entity camera look-controls="enabled: false"></a-entity>
     </a-scene>
 
     <script>
-        const imagePlane = document.getElementById("imagePlane");
-        const marker = document.getElementById("marker");
-
-        marker.addEventListener("markerFound", () => {
-            console.log('✓ Marqueur trouvé!');
-            // Animation: faire apparaître la carte
-            imagePlane.setAttribute('animation', {
-                property: 'scale',
-                from: '0.1 0.1 0.1',
-                to: '1 1 1',
-                dur: 800,
-                easing: 'easeOutElastic'
-            });
-        });
-
-        marker.addEventListener("markerLost", () => {
-            console.log('✗ Marqueur perdu');
+        // iOS nécessite une interaction utilisateur AVANT d'accéder à la caméra
+        const startBtn = document.getElementById('startBtn');
+        const arScene = document.getElementById('arScene');
+        
+        startBtn.addEventListener('click', async function() {
+            try {
+                console.log('Demande de permission caméra...');
+                
+                // Demander explicitement la permission caméra (OBLIGATOIRE sur iOS)
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                console.log('✓ Permission accordée!');
+                
+                // Arrêter le stream temporaire (AR.js va créer le sien)
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Masquer le bouton et afficher la scène AR
+                startBtn.classList.add('hidden');
+                arScene.classList.remove('hidden');
+                
+                // Attendre que la scène soit chargée
+                arScene.addEventListener('loaded', function() {
+                    console.log('✓ Scène AR chargée');
+                    
+                    const marker = document.getElementById('marker');
+                    const cardPlane = document.getElementById('cardPlane');
+                    
+                    if (marker && cardPlane) {
+                        marker.addEventListener('markerFound', function() {
+                            console.log('✓ Marqueur Hiro détecté!');
+                            cardPlane.setAttribute('visible', 'true');
+                        });
+                        
+                        marker.addEventListener('markerLost', function() {
+                            console.log('✗ Marqueur perdu');
+                        });
+                    }
+                });
+                
+            } catch (error) {
+                console.error('❌ Erreur caméra:', error);
+                alert('⚠️ Veuillez autoriser la caméra:\n\nRéglages iPhone → Safari → Caméra → Autoriser');
+            }
         });
     </script>
 </body>
