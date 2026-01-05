@@ -11,6 +11,7 @@
         <a-assets>
             <img id="cardImage" src="capture.jpg" crossorigin="anonymous">
             <img id="cardImage2" src="capture2.jpg" crossorigin="anonymous">
+            <a-asset-item id="logoModel" src="logo.gltf"></a-asset-item>
         </a-assets>
         
         <!-- Marker for tracking -->
@@ -36,6 +37,15 @@
                 height="1.25"
                 material="shader: flat; side: double">
             </a-plane>
+            
+            <!-- Logo 3D GLTF qui tourne -->
+            <a-entity 
+                id="logo3D"
+                gltf-model="#logoModel"
+                position="0 0.5 -2.5"
+                scale="0.5 0.5 0.5"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear">
+            </a-entity>
         </a-marker>
         
         <!-- Camera to view the scene -->
@@ -45,18 +55,21 @@
     <script>
         const imagePlane = document.getElementById("imagePlane");
         const imagePlane2 = document.getElementById("imagePlane2");
+        const logo3D = document.getElementById("logo3D");
         const marker = document.getElementById("marker");
 
         marker.addEventListener("markerFound", () => {
             console.log('✓ Marqueur détecté!');
             imagePlane.setAttribute('visible', 'true');
             imagePlane2.setAttribute('visible', 'true');
+            logo3D.setAttribute('visible', 'true');
         });
 
         marker.addEventListener("markerLost", () => {
             console.log('✗ Marqueur perdu');
             imagePlane.setAttribute('visible', 'false');
             imagePlane2.setAttribute('visible', 'false');
+            logo3D.setAttribute('visible', 'false');
         });
     </script>
 </body>
