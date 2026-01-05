@@ -10,9 +10,9 @@
 </head>
 <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
-        <!-- Assets: précharge l'image -->
+        <!-- Assets: précharge l'image avec cache-busting iOS -->
         <a-assets>
-            <img id="cardImg" src="capture.jpg" crossorigin="anonymous">
+            <img id="cardImg" crossorigin="anonymous">
         </a-assets>
         
         <!-- Marker for tracking -->
@@ -20,7 +20,6 @@
             <!-- Plane to display the image -->
             <a-plane 
                 id="imagePlane" 
-                src="#cardImg"
                 position="0 0 0" 
                 rotation="-90 0 0" 
                 width="2" 
@@ -34,25 +33,56 @@
     </a-scene>
 
     <script>
+        // Désactiver imageBitmap sur iOS (cause des textures noires)
+        const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                       (/Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+        
+        if (IS_IOS) {
+            window.createImageBitmap = undefined;
+            console.log('iOS détecté - imageBitmap désactivé');
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
-            const imagePlane = document.getElementById("imagePlane");
-            const marker = document.getElementById("marker");
-
-            marker.addEventListener("markerFound", () => {
-                console.log('✓ Marqueur trouvé!');
-                // Animation: faire apparaître la carte
-                imagePlane.setAttribute('animation', {
-                    property: 'scale',
-                    from: '0.1 0.1 0.1',
-                    to: '1 1 1',
-                    dur: 800,
-                    easing: 'easeOutElastic'
+            // Charger l'image avec cache-busting pour iOS
+            const cardImg = document.getElementById('cardImg');
+            const timestamp = new Date().getTime();
+            cardImg.src = 'capture.png?v=' + timestamp;
+            
+            cardImg.onload = function() {
+                console.log('✓ Image chargée:', cardImg.naturalWidth, 'x', cardImg.naturalHeight);
+                
+                // Vérifier la taille (iOS limite à 4096px)
+                if (cardImg.naturalWidth > 4096 || cardImg.naturalHeight > 4096) {
+                    console.warn('⚠️ Image trop grande pour iOS! Réduire à max 4096px');
+                }
+                
+                // Appliquer l'image au plane
+                const imagePlane = document.getElementById('imagePlane');
+                imagePlane.setAttribute('src', '#cardImg');
+                
+                // Setup marker listeners
+                const marker = document.getElementById('marker');
+                
+                marker.addEventListener('markerFound', () => {
+                    console.log('✓ Marqueur trouvé!');
+                    imagePlane.setAttribute('animation', {
+                        property: 'scale',
+                        from: '0.1 0.1 0.1',
+                        to: '1 1 1',
+                        dur: 800,
+                        easing: 'easeOutElastic'
+                    });
                 });
-            });
 
-            marker.addEventListener("markerLost", () => {
-                console.log('✗ Marqueur perdu');
-            });
+                marker.addEventListener('markerLost', () => {
+                    console.log('✗ Marqueur perdu');
+                });
+            };
+            
+            cardImg.onerror = function() {
+                console.error('❌ Erreur chargement image');
+                alert('Erreur: Impossible de charger capture.png');
+            };
         });
     </script>
 </body>
