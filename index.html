@@ -1,50 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Carte de Visite AR - Théo Métayer</title>
+    <title>Test AR #3</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/2.1.7/aframe/build/aframe-ar.js"></script>
-    <style>
-        .ar-button {
-            position: absolute;
-            bottom: 20px;
-            padding: 12px 24px;
-            background: rgba(70, 90, 70, 0.9);
-            color: white;
-            border: 2px solid white;
-            border-radius: 8px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            cursor: pointer;
-            z-index: 1000;
-        }
-        #portfolioBtn { left: 20px; }
-        #infoBtn { right: 20px; }
-        
-        .info-panel {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(70, 90, 70, 0.95);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            font-family: Arial, sans-serif;
-            display: none;
-            z-index: 1000;
-            max-width: 300px;
-        }
-    </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        <!-- Assets preload -->
         <a-assets>
             <img id="cardImage" src="capture.jpg" crossorigin="anonymous">
+            <img id="cardImage2" src="capture2.jpg" crossorigin="anonymous">
         </a-assets>
         
+        <!-- Marker for tracking -->
         <a-marker type="pattern" url="pattern-hiro.patt" emitevents="true" id="marker">
-            <!-- Carte de visite centrale -->
+            <!-- Premier plan pour afficher la première image -->
             <a-plane 
                 id="imagePlane" 
                 src="#cardImage" 
@@ -55,183 +26,37 @@
                 material="shader: flat; side: double">
             </a-plane>
             
-            <!-- Bouton Portfolio (coin supérieur gauche) -->
-            <a-box 
-                id="portfolioBox"
-                position="-1.3 0.8 0.1"
-                rotation="-90 0 0"
-                width="0.4" height="0.4" depth="0.15"
-                color="#4A6FA5"
-                animation="property: position; to: -1.3 0.85 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
-                class="clickable">
-                <a-text 
-                    value="WEB" 
-                    align="center" 
-                    color="white" 
-                    width="2"
-                    position="0 0 0.08"></a-text>
-            </a-box>
-            
-            <!-- Bouton Instagram (coin supérieur droit) -->
-            <a-cylinder 
-                id="instagramCyl"
-                position="1.3 0.8 0.1"
-                rotation="-90 0 0"
-                radius="0.25" height="0.15"
-                color="#E1306C"
-                animation="property: rotation; to: -90 360 0; dur: 4000; easing: linear; loop: true"
-                class="clickable">
-                <a-text 
-                    value="IG" 
-                    align="center" 
-                    color="white" 
-                    width="2.5"
-                    position="0 0 0.08"></a-text>
-            </a-cylinder>
-            
-            <!-- Bouton Téléphone (coin inférieur gauche) -->
-            <a-sphere 
-                id="phoneBtn"
-                position="-1.3 -0.8 0.15"
-                radius="0.22"
-                color="#25D366"
-                animation="property: scale; to: 1.2 1.2 1.2; dur: 800; easing: easeInOutQuad; loop: true; dir: alternate"
-                class="clickable">
-                <a-text 
-                    value="TEL" 
-                    align="center" 
-                    color="white" 
-                    width="2.5"
-                    position="0 0 0.23"></a-text>
-            </a-sphere>
-            
-            <!-- Bouton Email (coin inférieur droit) -->
-            <a-box 
-                id="emailBox"
-                position="1.3 -0.8 0.1"
-                rotation="-90 45 0"
-                width="0.4" height="0.4" depth="0.15"
-                color="#EA4335"
-                animation="property: rotation; to: -90 405 0; dur: 3000; easing: easeInOutQuad; loop: true"
-                class="clickable">
-                <a-text 
-                    value="MAIL" 
-                    align="center" 
-                    color="white" 
-                    width="1.8"
-                    position="0 0 0.08"></a-text>
-            </a-box>
-            
-            <!-- Particules décoratives autour -->
-            <a-torus 
-                position="0 0 0.3"
-                rotation="-90 0 0"
-                radius="1.5" radius-tubular="0.02"
-                color="#FFD700"
-                opacity="0.6"
-                animation="property: rotation; to: -90 0 360; dur: 10000; easing: linear; loop: true">
-            </a-torus>
-            
-            <!-- Icône IUT de Corse (en haut) -->
-            <a-text 
-                value="IUT DE CORSE" 
-                position="0 1.2 0.1"
-                rotation="-90 0 0"
-                align="center" 
-                color="#4A5D4A" 
-                width="2.5"
-                animation="property: position; to: 0 1.25 0.1; dur: 2000; easing: easeInOutSine; loop: true; dir: alternate">
-            </a-text>
-            
-            <!-- Badge étudiant animé -->
-            <a-ring
-                position="0 -1.2 0.1"
-                rotation="-90 0 0"
-                radius-inner="0.15" radius-outer="0.25"
-                color="#4A5D4A"
-                animation="property: scale; to: 1.3 1.3 1; dur: 1500; easing: easeInOutQuad; loop: true; dir: alternate">
-                <a-text 
-                    value="STUDENT" 
-                    align="center" 
-                    color="white" 
-                    width="1.5"
-                    position="0 0 0.05"></a-text>
-            </a-ring>
-            
-            <!-- Lumière ambiante pour effet -->
-            <a-light type="point" intensity="0.8" color="#FFE4B5" position="0 0 2"></a-light>
+            <!-- Deuxième plan pour afficher la deuxième image juste en dessous -->
+            <a-plane 
+                id="imagePlane2" 
+                src="#cardImage2" 
+                position="0 0 -1.25" 
+                rotation="-90 0 0" 
+                width="2" 
+                height="1.25"
+                material="shader: flat; side: double">
+            </a-plane>
         </a-marker>
         
+        <!-- Camera to view the scene -->
         <a-entity camera></a-entity>
     </a-scene>
 
-    <!-- Boutons UI overlay -->
-    <button id="portfolioBtn" class="ar-button">📱 Portfolio</button>
-    <button id="infoBtn" class="ar-button">ℹ️ Infos</button>
-    
-    <div id="infoPanel" class="info-panel">
-        <h3 style="margin-top: 0;">Théo Métayer - Étudiant</h3>
-        <p>IUT de Corse</p>
-        <p>📞 07 83 09 28 36</p>
-        <button onclick="document.getElementById('infoPanel').style.display='none'" 
-                style="margin-top: 10px; padding: 5px 15px; background: white; border: none; border-radius: 5px; cursor: pointer;">
-            Fermer
-        </button>
-    </div>
-
     <script>
         const imagePlane = document.getElementById("imagePlane");
+        const imagePlane2 = document.getElementById("imagePlane2");
         const marker = document.getElementById("marker");
-        const scene = document.querySelector('a-scene');
 
         marker.addEventListener("markerFound", () => {
             console.log('✓ Marqueur détecté!');
             imagePlane.setAttribute('visible', 'true');
+            imagePlane2.setAttribute('visible', 'true');
         });
 
         marker.addEventListener("markerLost", () => {
             console.log('✗ Marqueur perdu');
             imagePlane.setAttribute('visible', 'false');
-        });
-
-        // Gestion des clics sur les éléments AR
-        scene.addEventListener('loaded', function () {
-            // Portfolio
-            document.getElementById('portfolioBox').addEventListener('click', function() {
-                window.open('https://votre-portfolio.com', '_blank');
-            });
-
-            // Instagram
-            document.getElementById('instagramCyl').addEventListener('click', function() {
-                window.open('https://instagram.com/votre_compte', '_blank');
-            });
-
-            // Téléphone
-            document.getElementById('phoneBtn').addEventListener('click', function() {
-                window.location.href = 'tel:0783092836';
-            });
-
-            // Email
-            document.getElementById('emailBox').addEventListener('click', function() {
-                window.location.href = 'mailto:theo.metayer@iut-corse.fr';
-            });
-        });
-
-        // Boutons overlay
-        document.getElementById('portfolioBtn').addEventListener('click', function() {
-            window.open('https://votre-portfolio.com', '_blank');
-        });
-
-        document.getElementById('infoBtn').addEventListener('click', function() {
-            document.getElementById('infoPanel').style.display = 'block';
-        });
-
-        // Ajout du raycaster pour détecter les clics en AR
-        scene.addEventListener('click', function(evt) {
-            const clickedEl = evt.detail.intersection?.object.el;
-            if (clickedEl && clickedEl.classList.contains('clickable')) {
-                clickedEl.emit('click');
-            }
+            imagePlane2.setAttribute('visible', 'false');
         });
     </script>
 </body>
